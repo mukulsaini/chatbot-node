@@ -37,6 +37,29 @@ app.post('/webhook', (req, res)=>{
   }
 });
 
+app.post('/ai', (req, res) => {
+  if (req.body.result.action === 'weather') {
+    let city = req.body.result.parameters['geo-city'];
+    let restUrl = 'http://api.openweathermap.org/data/2.5/weather?APPID=1ca44c68f1dd2c033c8941ef903e9a39'
++'&q='+city;
+
+    request.get(restUrl, (err, response, body) => {
+      if (!err && response.statusCode == 200) {
+        let json = JSON.parse(body);
+       json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
+        return res.json({
+          speech: msg,
+          displayText: msg,
+          source: 'weather'});
+      } else {
+        return res.status(400).json({
+          status: {
+            code: 400,
+            errorType: 'I failed to look up the city name.'}});
+      }})
+  }
+});
+
 
 function sendMessage(event) {
   let sender = event.sender.id;
@@ -72,21 +95,6 @@ function sendMessage(event) {
 
   apiai.end();
 
-//  request({
-//    url: 'https://graph.facebook.com/v2.6/me/messages',
-//    qs: {access_token: 'EAAF1yhb4jjEBAP424GGyZAGpgLB7ZBZAujxsdDNLJyxlRyde6fShZBC7zCqHsdEWBxtqNLkgxSxeNbgjoVZCXTyM1EFvCb12JOKOA9C2ywPKG7rYzfhPo3TnVZAY2tZBKD2yw0QPwNc0E7ZC5eY2AEr2cSFMIhyMpn5UXvsGn3YMmgZDZD'},
-//    method: 'POST',
-//    json: {
-//      recipient: {id: sender},
-//      message: {text: text}
-//    }
-//  }, function (error, response) {
-//    if (error) {
-//        console.log('Error sending message: ', error);
-//    } else if (response.body.error) {
-//        console.log('Error: ', response.body.error);
-//    }
-//  });
 }
 
 const server = app.listen(process.env.PORT || 5000, ()=>{
