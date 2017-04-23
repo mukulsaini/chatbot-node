@@ -4,6 +4,7 @@
   "description": "Simple Facebook Messenger AI Bot with API.ai in Node.js",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon webhook.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,8 @@
   "dependencies": {
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
+    "github-api": "^3.0.0",
+    "nodemon": "^1.11.0",
     "request": "^2.81.0"
   }
 }

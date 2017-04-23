@@ -5,10 +5,19 @@ const request = require('request');
 const apiai = require('apiai');
 const config = require('./config');
 
+const GitHub = require('github-api');
+const Promise = require("es6-promise").Promise;
+
 const app1 = apiai(config.apiai.CLIENT_ACCESS_TOKEN);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// basic auth  for github
+var gh = new GitHub({
+    token: '60bc6e4fd234be9e1d956b8176735c8e976c8d32' 
+});
+
 
 /* For facebook validation */
 app.get('/webhook', (req, res)=> {
@@ -19,14 +28,6 @@ app.get('/webhook', (req, res)=> {
     }
 });
 
-/* For facebook validation */
-app.get('/ai', (req, res)=> {
-    if(req.query['hub.mode'] && req.query['hub.verify_token'] === config.facebook.ValidationToken){
-        res.status(200).send(req.query['hub.challenge']);
-    }else {
-        res.status(403).end();
-    }
-});
 
 /* Handling all messages */
 app.post('/webhook', (req, res)=>{
@@ -48,13 +49,16 @@ app.post('/webhook', (req, res)=>{
 app.post('/ai', (req, res) => {
 
   if (req.body.result.action === 'weather') {
-    let city = req.body.result.parameters['geo-city'];
+    let city = req.body.result.parameters['city'];
+    console.log(req.body.result.parameters);
+    console.log(city);
     let restUrl = 'http://api.openweathermap.org/data/2.5/weather?APPID='+config.weatherApi.WEATHER_API_KEY+'&q='+city;
 
     request.get(restUrl, (err, response, body) => {
       if (!err && response.statusCode == 200) {
         let json = JSON.parse(body);
-       let msg = json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
+        let msg = json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
+        //console.log(msg);
         return res.json({
           speech: msg,
           displayText: msg,
@@ -65,8 +69,25 @@ app.post('/ai', (req, res) => {
             code: 400,
             errorType: 'I failed to look up the city name.'}});
       }})
+  }else if(req.body.result.action === 'github') {
+    let username = req.body.result.parameters['any'];
+    console.log(req.body.result.parameters);
+    //console.log(username);
+        
+     gh.getUser(username).listStarredRepos()
+       .then((data, err)=>{
+        if(err)
+            console.log(err);
+        let msg = `${username} has ${data.data.length} repos!`;
+
+        return res.json({
+          speech: msg,
+          displayText: msg,
+          source: 'github'});     
+        });
   }
 });
+
 
 
 function sendMessage(event) {
