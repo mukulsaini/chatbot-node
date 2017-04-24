@@ -21,6 +21,7 @@
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
     "github-api": "^3.0.0",
+    "moment": "^2.18.1",
     "nodemon": "^1.11.0",
     "request": "^2.81.0"
   }

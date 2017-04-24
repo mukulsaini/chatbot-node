@@ -2,6 +2,7 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const request = require('request');
+var moment = require('moment');
 const apiai = require('apiai');
 const config = require('./config');
 
@@ -13,11 +14,16 @@ const app1 = apiai(config.apiai.CLIENT_ACCESS_TOKEN);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// basic auth  for github
+// oauth for github
 var gh = new GitHub({
-    token: '60bc6e4fd234be9e1d956b8176735c8e976c8d32' 
+    token: config.github.OAUTH_TOKEN 
 });
-
+//
+//const clayreimann1 = gh.getUser('mukulsaini');
+//clayreimann1.getProfile(function(err, repos) {
+//   console.log(repos);
+//    console.log(err);
+//});
 
 /* For facebook validation */
 app.get('/webhook', (req, res)=> {
@@ -47,7 +53,7 @@ app.post('/webhook', (req, res)=>{
 });
 
 app.post('/ai', (req, res) => {
-
+    
   if (req.body.result.action === 'weather') {
     let city = req.body.result.parameters['city'];
     console.log(req.body.result.parameters);
@@ -70,25 +76,50 @@ app.post('/ai', (req, res) => {
             errorType: 'I failed to look up the city name.'}});
       }})
   }else if(req.body.result.action === 'github') {
+
     let username = req.body.result.parameters['any'];
+    let type = req.body.result.parameters['type'];
     console.log(req.body.result.parameters);
-    //console.log(username);
-        
-     gh.getUser(username).listStarredRepos()
-       .then((data, err)=>{
+    if(type === "no. of repositories"){
+        console.log("Fetching number of repos for user : ", username);
+        gh.getUser(username).getProfile()
+           .then((data, err)=>{
+                if(err)
+                    console.log(err);
+                console.log(data.data);
+                let msg = `${username} has ${data.data.public_repos} repos! \n  ${data.data.html_url}?tab=repositories`;
+         
+                // to log the time taken by request to get complete  
+                let startTime = moment(res.req._startTime);
+                let diff = moment().diff(startTime, 'ms');''
+                console.log("time taken by the request to complete : ", diff);
+                return res.json({
+                  speech: msg,
+                  displayText: msg,
+                  source: 'github'
+                });    
+            });                            
+                                          
+    }else if(type === "no. of starred repositories"){
+        console.log("Fetching number of repos for user : ", username);
+        gh.getUser(username).listStarredRepos()
+        .then((data, err)=>{
         if(err)
             console.log(err);
         let msg = `${username} has ${data.data.length} repos!`;
 
+        // to log the time taken by request to get complete  
+        let startTime = moment(res.req._startTime);
+        let diff = moment().diff(startTime, 'ms');''
+        console.log("time taken by the request to complete : ",diff);
         return res.json({
           speech: msg,
           displayText: msg,
           source: 'github'});     
-        });
+        });       
+    }    
   }
 });
-
-
 
 function sendMessage(event) {
   let sender = event.sender.id;
