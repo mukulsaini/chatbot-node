@@ -5,7 +5,7 @@ const request = require('request');
 var moment = require('moment');
 const apiai = require('apiai');
 const config = require('./config');
-
+const GithubBot = require('./lib/github')
 const GitHub = require('github-api');
 const Promise = require("es6-promise").Promise;
 
@@ -74,50 +74,10 @@ app.post('/ai', (req, res) => {
           status: {
             code: 400,
             errorType: 'I failed to look up the city name.'}});
-      }})
+      }});
+      
   }else if(req.body.result.action === 'github') {
-
-    let username = req.body.result.parameters['any'];
-    let type = req.body.result.parameters['type'];
-    console.log(req.body.result.parameters);
-    if(type === "no. of repositories"){
-        console.log("Fetching number of repos for user : ", username);
-        gh.getUser(username).getProfile()
-           .then((data, err)=>{
-                if(err)
-                    console.log(err);
-                console.log(data.data);
-                let msg = `${username} has ${data.data.public_repos} repos! \n  ${data.data.html_url}?tab=repositories`;
-         
-                // to log the time taken by request to get complete  
-                let startTime = moment(res.req._startTime);
-                let diff = moment().diff(startTime, 'ms');''
-                console.log("time taken by the request to complete : ", diff);
-                return res.json({
-                  speech: msg,
-                  displayText: msg,
-                  source: 'github'
-                });    
-            });                            
-                                          
-    }else if(type === "no. of starred repositories"){
-        console.log("Fetching number of repos for user : ", username);
-        gh.getUser(username).listStarredRepos()
-        .then((data, err)=>{
-        if(err)
-            console.log(err);
-        let msg = `${username} has ${data.data.length} repos!`;
-
-        // to log the time taken by request to get complete  
-        let startTime = moment(res.req._startTime);
-        let diff = moment().diff(startTime, 'ms');''
-        console.log("time taken by the request to complete : ",diff);
-        return res.json({
-          speech: msg,
-          displayText: msg,
-          source: 'github'});     
-        });       
-    }    
+      GithubBot(req,res);
   }
 });
 
