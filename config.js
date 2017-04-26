@@ -10,8 +10,8 @@ const config = {
         WEATHER_API_KEY : '1ca44c68f1dd2c033c8941ef903e9a39'
     }, 
     github : {
-        /* Change this according to your profile */
-        OAUTH_TOKEN : 'ffb18eebc4c5a045dxxxxxxxxxxxxxx'
+        /* Change this according to your profile*/
+        OAUTH_TOKEN : 'ffb18eebc4c5a045d5a2c4a84e302b787cde6be7'
     }
 }
 
