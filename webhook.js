@@ -5,25 +5,43 @@ const request = require('request');
 var moment = require('moment');
 const apiai = require('apiai');
 const config = require('./config');
-const GithubBot = require('./lib/github')
-const GitHub = require('github-api');
+const GithubBot = require('./lib/github');
+const WeatherBot = require('./lib/weather');
 const Promise = require("es6-promise").Promise;
+const morgan = require('morgan');
 
 const app1 = apiai(config.apiai.CLIENT_ACCESS_TOKEN);
+
+app.use(morgan('dev'))
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// oauth for github
-var gh = new GitHub({
-    token: config.github.OAUTH_TOKEN 
-});
-//
-//const clayreimann1 = gh.getUser('mukulsaini');
-//clayreimann1.getProfile(function(err, repos) {
-//   console.log(repos);
-//    console.log(err);
+
+const GitHub = require('github-api');
+
+
+//var gh = new GitHub({
+//    token: config.github.OAUTH_TOKEN 
 //});
+//
+//
+////    const xyz = gh.getUser('mukul saini');
+////    xyz.getProfile(function(err, repos) {
+////       console.log(repos);
+////        //console.log(err);
+////    });  
+////    
+//    
+//     gh.getUser('mukul saini').getProfile()
+//        .then((data)=>{
+//            console.log(data)
+//        }, (err)=>{
+//            console.log(err);
+//        });
+//
+//// oauth for github
+
 
 /* For facebook validation */
 app.get('/webhook', (req, res)=> {
@@ -55,27 +73,7 @@ app.post('/webhook', (req, res)=>{
 app.post('/ai', (req, res) => {
     
   if (req.body.result.action === 'weather') {
-    let city = req.body.result.parameters['city'];
-    console.log(req.body.result.parameters);
-    console.log(city);
-    let restUrl = 'http://api.openweathermap.org/data/2.5/weather?APPID='+config.weatherApi.WEATHER_API_KEY+'&q='+city;
-
-    request.get(restUrl, (err, response, body) => {
-      if (!err && response.statusCode == 200) {
-        let json = JSON.parse(body);
-        let msg = json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
-        //console.log(msg);
-        return res.json({
-          speech: msg,
-          displayText: msg,
-          source: 'weather'});
-      } else {
-        return res.status(400).json({
-          status: {
-            code: 400,
-            errorType: 'I failed to look up the city name.'}});
-      }});
-      
+      WeatherBot(req,res);
   }else if(req.body.result.action === 'github') {
       GithubBot(req,res);
   }
