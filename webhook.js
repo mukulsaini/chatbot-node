@@ -9,7 +9,6 @@ const GithubBot = require('./lib/github');
 const WeatherBot = require('./lib/weather');
 const Promise = require("es6-promise").Promise;
 const morgan = require('morgan');
-
 const app1 = apiai(config.apiai.CLIENT_ACCESS_TOKEN);
 
 app.use(morgan('dev'))
@@ -17,10 +16,30 @@ app.use(morgan('dev'))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
 const GitHub = require('github-api');
 
+//
+//request.get('http://api.musixmatch.com/ws/1.1/track.search?apikey=a927e59d4134e78c5100c1a69d301b7f&q_artist=justin%20bieber&page_size=10&page=1&s_track_rating=desc', (err, response, body) =>{
+//    console.log(JSON.parse(body));
+//        console.log(err);
+//
+//});
 
+
+//request.get({
+//    'url' :'http://api.musixmatch.com/ws/1.1/track.search?q_artist=justin bieber&page_size=10&page=1&s_track_rating=desc',
+//    'qs': {
+//        apikey : 'a927e59d4134e78c5100c1a69d301b7f'
+//    }
+//}, (err, response, body) =>{
+//    let b = JSON.parse(body);
+////    console.log(b.message.body.track_list);
+////        console.log(err);
+//
+//});
+//
+
+ //http://api.musixmatch.com/ws/1.1/
 //var gh = new GitHub({
 //    token: config.github.OAUTH_TOKEN 
 //});
@@ -88,6 +107,7 @@ function sendMessage(event) {
     
   apiai.on('response', (response) => {
     // Got a response from api.ai. Let's POST to Facebook Messenger
+    console.log(response.result.fulfillment.messages);  
     let aiText = response.result.fulfillment.speech;
 
     request({
@@ -97,11 +117,20 @@ function sendMessage(event) {
       json: {
         recipient: {id: sender},
         message: {text: aiText}
+//          "message":{
+//            "attachment":{
+//              "type":"image", 
+//              "payload":{
+//                "url":"http://s.mxmcdn.net/images-storage/albums/nocover.png", 
+//                "is_reusable":true,
+//              }
+//            }
+//          }        
       }
     }, (error, response) => {
       if (error) {
           console.log('Error sending message: ', error);
-      } else if (response.body.error) {
+      }else if (response.body.error){
           console.log('Error: ', response.body.error);
       }
     });
@@ -110,7 +139,7 @@ function sendMessage(event) {
   apiai.on('error', (error) => {
     console.log(error);
   });
-
+    
   apiai.end();
 
 }
