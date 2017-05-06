@@ -11,7 +11,7 @@ const config = {
     }, 
     github : {
         /* Change this according to your profile*/
-        OAUTH_TOKEN : '5bb456638078d58965fb146xxxxxxxxxxxxx '
+        OAUTH_TOKEN : '5bb456638078d58965fb1xxxx '
     }
 }
 
