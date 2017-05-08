@@ -4,14 +4,10 @@ const config = {
     },
     facebook : {
         ValidationToken : 'tuxedo_cat',
-        PAGE_ACCESS_TOKEN : 'EAAF1yhb4jjEBAFONctHZBeZBb4ZBLXGTiVhfIDcuqpE2dXrxPyauDUkOZCyFTuvRsZCpywKeFT9Mpt2ZB8TQK86RI73rqwWSj1ZCl3fZBZCR0B0pJBe8eq4h84GHMDiiujVtTtVe7LjtZCw4MMd4FZAfC21OSTZB6wPxhWwGNn97LyxptQZDZD'
+        PAGE_ACCESS_TOKEN : 'EAAF1yhb4jjEBAGjAZCQUC6kZBmDA26Xsul8Cc4TAdD1yf4b0BNiZCd4JgcmhA3LP0m3bmTo2jaMIfJN15BjTq7p34K6Tn76pQNIqAd5FTVj9pUPOioIicUAhsEkqmf8RkwZAkVzqfvMM0yOdxUplYsckojJ0uy49UAU0EMXLHQZDZD'
     },
     weatherApi : {
         WEATHER_API_KEY : '1ca44c68f1dd2c033c8941ef903e9a39'
-    }, 
-    github : {
-        /* Change this according to your profile*/
-        OAUTH_TOKEN : 'ffb18eebc4c5a045d5a2c4a84e302b787cde6be7'
     }
 }
 
