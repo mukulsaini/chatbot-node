@@ -8,6 +8,12 @@ const config = {
     },
     weatherApi : {
         WEATHER_API_KEY : '1ca44c68f1dd2c033c8941ef903e9a39'
+    },
+    abbrevationApi : {
+        ABBR_X_Mashape_Key : 'YmFmf1BdGXmshO2rxUGbtLV9owoDp13mVtUjsnqKN4faV6kJIc'
+    },
+    wordnikApi : {
+      WORDNIK_API_KEY : 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5'
     }
 }
 
