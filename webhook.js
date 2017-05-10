@@ -110,6 +110,7 @@ function sendMessage(event) {
 
   apiai.on('response', (response) => {
     // Got a response from api.ai. Let's POST to Facebook Messenger
+    console.log("Response result from fulfillment");
     console.log(response.result.fulfillment.messages);
     let aiText = response.result.fulfillment.speech;
 
