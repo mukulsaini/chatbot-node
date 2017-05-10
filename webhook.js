@@ -7,6 +7,7 @@ const apiai = require('apiai');
 const config = require('./config');
 const GithubBot = require('./lib/github');
 const WeatherBot = require('./lib/weather');
+const DictionaryBot = require('./lib/dictionary');
 const Promise = require("es6-promise").Promise;
 const morgan = require('morgan');
 const app1 = apiai(config.apiai.CLIENT_ACCESS_TOKEN);
@@ -41,7 +42,7 @@ const GitHub = require('github-api');
 
  //http://api.musixmatch.com/ws/1.1/
 //var gh = new GitHub({
-//    token: config.github.OAUTH_TOKEN 
+//    token: config.github.OAUTH_TOKEN
 //});
 //
 //
@@ -49,9 +50,9 @@ const GitHub = require('github-api');
 ////    xyz.getProfile(function(err, repos) {
 ////       console.log(repos);
 ////        //console.log(err);
-////    });  
-////    
-//    
+////    });
+////
+//
 //     gh.getUser('mukul saini').getProfile()
 //        .then((data)=>{
 //            console.log(data)
@@ -75,7 +76,7 @@ app.get('/webhook', (req, res)=> {
 /* Handling all messages */
 app.post('/webhook', (req, res)=>{
     console.log(req.body);
-    
+
     if (req.body.object === 'page') {
         req.body.entry.forEach((entry) => {
             console.log(entry.messaging);
@@ -90,11 +91,13 @@ app.post('/webhook', (req, res)=>{
 });
 
 app.post('/ai', (req, res) => {
-    
+
   if (req.body.result.action === 'weather') {
       WeatherBot(req,res);
   }else if(req.body.result.action === 'github') {
       GithubBot(req,res);
+  }else if(req.body.result.action === 'dictionary') {
+      DictionaryBot(req,res);
   }
 });
 
@@ -103,11 +106,12 @@ function sendMessage(event) {
   let text = event.message.text;
   let apiai = app1.textRequest(text, {
     sessionId: 'tabby_cat' // use any arbitrary id
-  });  
-    
+  });
+
   apiai.on('response', (response) => {
     // Got a response from api.ai. Let's POST to Facebook Messenger
-    console.log(response.result.fulfillment.messages);  
+    console.log("Response result from fulfillment");
+    console.log(response.result.fulfillment.messages);
     let aiText = response.result.fulfillment.speech;
 
     request({
@@ -119,13 +123,13 @@ function sendMessage(event) {
         message: {text: aiText}
 //          "message":{
 //            "attachment":{
-//              "type":"image", 
+//              "type":"image",
 //              "payload":{
-//                "url":"http://s.mxmcdn.net/images-storage/albums/nocover.png", 
+//                "url":"http://s.mxmcdn.net/images-storage/albums/nocover.png",
 //                "is_reusable":true,
 //              }
 //            }
-//          }        
+//          }
       }
     }, (error, response) => {
       if (error) {
@@ -139,7 +143,7 @@ function sendMessage(event) {
   apiai.on('error', (error) => {
     console.log(error);
   });
-    
+
   apiai.end();
 
 }
