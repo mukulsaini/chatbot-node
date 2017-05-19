@@ -98,6 +98,25 @@ app.post('/ai', (req, res) => {
       GithubBot(req,res);
   }else if(req.body.result.action === 'dictionary') {
       DictionaryBot(req,res);
+  }else if(req.body.result.action === "input.unknown"){
+      console.log("&&&&&&&&&&&&&&&&&&&&&&&");
+      console.log(req.body.result.resolvedQuery);
+      request.get({
+        'url' : `https://www.googleapis.com/customsearch/v1`,
+        'qs' : {
+          key : config.googleCSE.API_KEY,
+          cx : config.googleCSE.CX,
+          q : req.body.result.resolvedQuery
+        }
+      }, (err, response, body)=>{
+        let json = JSON.parse(body);
+        console.log(json);
+        msg = `${json.items[0].snippet} \n${json.items[0].link}`;
+        return res.json({
+           speech: msg,
+           displayText: msg
+        });
+      });
   }
 });
 
