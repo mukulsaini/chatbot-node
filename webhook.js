@@ -108,6 +108,14 @@ app.post('/ai', (req, res) => {
       GithubBot(req,res);
   }else if(req.body.result.action === 'dictionary') {
       DictionaryBot(req,res);
+  }else if (req.body.result.action === "input.unknown"){
+    //TODO :  Echo back the same response
+    console.log("Hell Yeah!! I don't know what to say");
+    let orginalMessage = req.body.result.resolvedQuery;
+    return res.json({
+      speech : orginalMessage,
+      displayText: orginalMessage
+    });
   }
   // else if(req.body.result.action === "input.unknown"){
   //     console.log(req.body.result.resolvedQuery);
@@ -134,32 +142,55 @@ function sendMessage(event) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
   let timeOfMessage = new Date(event.timestamp);
+  timeOfMessage = timeOfMessage.toLocaleString();
   let message = event.message;
-  let messageId = message.mid;
-  let messageText = event.message.text;
-  let messageAttachments = event.message.attachments;
 
-  console.log("Received message for user %d and page %d at %d with message:",
+  // Types of messages that can be received
+  let messageText = message.text;
+  let messageAttachments = message.attachments;
+  let quickReply = message.quick_reply;
+
+  console.log("Received message for user %d and page %d at %s with message:",
     senderID, recipientID, timeOfMessage);
   console.log(JSON.stringify(message));
 
+  // message.is_echo -> True when message has been sent by the page. Message can be a text message or an
+  // attachment
+  let isEcho = message.is_echo;
+  let messageId = message.mid;
+  let appId  = message.app_id;
+  let metadata = message.metadata;
+  if(isEcho){
+    //  Just logging message echoes to  console.
+    console.log("Received Echo for message %s and an app %d with metadata %s", messageId, appId, metadata);
+    return;
+  }else if(quickReply){
+    let quickReplyPayload =  quickReply.payload;
+    console.log("Quick reply for message %s  with payload %s", messageId, quickReplyPayload);
+    sendTextMessage(senderID, "QuickReply Tapped");
+  }
+
   if(messageText){
     switch (messageText) {
-      case 'generic':
+      case 'image':
+        sendImageMessage(senderID);
+      break;
+      case 'mukul saini':
         sendGenericMessage(senderID);
         break;
       default:
         sendTextMessage(senderID, messageText);
     }
   }else if(messageAttachments){
-      sendTextMessage(senderID, "Message with attachment received")
+      let attachmentType = messageAttachments[0].type;
+      sendTextMessage(senderID, "Message with attachment received of type "+ attachmentType);
   }
 }
 
 function receivedPostback(event){
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
-  let timeOfPostback = event.timestam;
+  let timeOfPostback = event.timestamp;
 
   // This payload parameter is set in button for structured message
   let payload = event.postback.payload;
@@ -169,9 +200,32 @@ function receivedPostback(event){
   // let them know it was successful
   sendTextMessage(senderID, "Postback called");
 }
-
+//  Send an image using Send API
+function sendImageMessage(recipientID, messageText){
+  var messageData  = {
+    recipient: {
+      id: recipientID
+    },
+    message: {
+      attachment: {
+        type: "image",
+        payload: {
+          url: 'https://avatars2.githubusercontent.com/u/9019318?v=3&s=400'
+        }
+      }
+    }
+  }
+  callSendAPI(messageData);
+};
+// Send an image using Send API
+function sendGIFMessage(recipientID, messageText){
+  var  messageData = {
+    reciep
+  }
+}
+// Send a structured message with generic template
 function sendGenericMessage(recipientID, messageText){
-// TODO: TO be expanded later
+// TODO: Hard Coded to mukulsaini
   var messageData = {
     recipient: {
       id: recipientID
@@ -182,13 +236,13 @@ function sendGenericMessage(recipientID, messageText){
         payload: {
           template_type: "generic",
           elements: [{
-            title: "rift",
-            subtitle: "Next Generation virual reality",
-            item_url: "https://www.oculus.com/en-us/rift/",
-            image_url: "http://messengerdemo.parseapp.com/img/rift.png",
+            title: "Mukul Saini",
+            subtitle: "Github",
+            item_url: "https://www.github.com/mukulsaini/",
+            image_url: "https://avatars2.githubusercontent.com/u/9019318?v=3&s=400",
             buttons: [{
               type: "web_url",
-              url: "https://www.oculus.com/en-us/rift/",
+              url: "https://www.github.com/mukulsaini/",
               title: "Open web URL"
             },{
               type: "postback",
@@ -196,13 +250,13 @@ function sendGenericMessage(recipientID, messageText){
               payload: "Payload for first bubble",
             }],
           }, {
-            title: "touch",
-            subtitle: "Your Hands, Now in VR",
-            item_url: "https://www.oculus.com/en-us/touch/",
-           image_url: "http://messengerdemo.parseapp.com/img/touch.png",
+            title: "Mukul Saini",
+            subtitle: "Instagram",
+            item_url: "https://www.instagram.com/mcrist_ms/",
+           image_url: "https://www.instagram.com/p/BS_INtul5mR/?taken-by=mcrist_ms",
            buttons: [{
              type: "web_url",
-             url: "https://www.oculus.com/en-us/touch/",
+             url: "https://www.instagram.com/mcrist_ms/",
              title: "Open Web URL"
            }, {
              type: "postback",
@@ -215,7 +269,6 @@ function sendGenericMessage(recipientID, messageText){
     }
   }
   callSendAPI(messageData);
-
 }
 
 function sendTextMessage(recipientID, messageText){
