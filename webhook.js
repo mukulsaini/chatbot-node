@@ -175,6 +175,9 @@ function sendMessage(event) {
       case 'image':
         sendImageMessage(senderID);
       break;
+      case 'quick reply':
+        sendQuickReply(senderID);
+      break;
       case 'mukul saini':
         sendGenericMessage(senderID);
         break;
@@ -190,8 +193,8 @@ function sendMessage(event) {
 function receivedPostback(event){
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
-  let timeOfPostback = event.timestamp;
-
+  let timeOfPostback = new Date(event.timestamp);
+  timeOfPostback = timeOfPostback.toLocaleString();
   // This payload parameter is set in button for structured message
   let payload = event.postback.payload;
   console.log("Received postback for user %d and page %d with payload '%s' " +
@@ -220,8 +223,19 @@ function sendImageMessage(recipientID, messageText){
 // Send an image using Send API
 function sendGIFMessage(recipientID, messageText){
   var  messageData = {
-    reciep
-  }
+    recipent: {
+      id: recipientID
+    },
+    message: {
+      attachment: {
+        type: "image",
+        payload: {
+          url: ''
+        }
+      }
+    }
+  };
+  callSendAPI(messageData);
 }
 // Send a structured message with generic template
 function sendGenericMessage(recipientID, messageText){
@@ -311,6 +325,35 @@ function sendTextMessage(recipientID, messageText){
 
   apiai.end();
 
+}
+// Send a message with quick reply button
+function sendQuickReply(recipientId){
+  let messageData = {
+    recipient : {
+      id : recipientId
+    },
+    message: {
+      text: "What's your favorite movie genre?",
+      quick_replies: [
+        {
+          "content_type": "text",
+          "title": "Action",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+        },
+        {
+          "content_type": "text",
+          "title": "Comedy",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
+        },
+        {
+          "content_type": "text",
+          "title": "Drama",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+        }
+      ]
+    }
+  };
+  callSendAPI(messageData);
 }
 
 function callSendAPI(messageData){
