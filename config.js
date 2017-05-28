@@ -18,6 +18,9 @@ const config = {
     googleCSE : {
       CX : '011672811931258127707:2r70kif93ie',
       API_KEY : 'AIzaSyDHZvUKwlSrreOgMTPndd0xbtk9JDdXJMA'
+    },
+    database: {
+      MONGO_DB: "mongodb://mcrist:mcrist@ds155091.mlab.com:55091/chatbot-node"
     }
 }
 
