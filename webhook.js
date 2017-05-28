@@ -2,7 +2,7 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const request = require('request');
-var moment = require('moment');
+const moment = require('moment');
 const apiai = require('apiai');
 const config = require('./config');
 const GithubBot = require('./lib/github');
@@ -10,6 +10,9 @@ const WeatherBot = require('./lib/weather');
 const DictionaryBot = require('./lib/dictionary');
 const Promise = require("es6-promise").Promise;
 const morgan = require('morgan');
+const mongoose = require('mongoose');
+const Attachment =  require('./models/db');
+
 const app1 = apiai(config.apiai.CLIENT_ACCESS_TOKEN);
 
 app.use(morgan('dev'))
@@ -75,8 +78,8 @@ app.get('/webhook', (req, res)=> {
 
 /* Handling all messages */
 app.post('/webhook', (req, res)=>{
-    console.log("************ POST webhook ");
-    console.log(req.body);
+    console.log("************ POST webhook ****************");
+    //console.log(req.body);
     if (req.body.object === 'page') {
         req.body.entry.forEach((entry) => {
           let pageID = entry.id;
@@ -175,6 +178,9 @@ function sendMessage(event) {
       case 'image':
         sendImageMessage(senderID);
       break;
+      case 'quick reply':
+        sendQuickReply(senderID);
+      break;
       case 'mukul saini':
         sendGenericMessage(senderID);
         break;
@@ -182,16 +188,31 @@ function sendMessage(event) {
         sendTextMessage(senderID, messageText);
     }
   }else if(messageAttachments){
+      mongoose.Promise = global.Promise
+      mongoose.connect(config.database.MONGO_DB)
+         .then(() =>  console.log('Mongo DB connection succesful'))
+         .catch((err) => console.error(err));
+
       let attachmentType = messageAttachments[0].type;
-      sendTextMessage(senderID, "Message with attachment received of type "+ attachmentType);
+      var attachment = new Attachment({
+        senderId : senderID,
+        attachmentType : attachmentType,
+        attachmentLink : messageAttachments[0].payload.url
+      });
+     // save the image into the database
+     attachment.save(function(err) {
+       if (err) throw err;
+       sendTextMessageDirectly(senderID, "Message with attachment received of type "+ attachmentType+ " and save succesfully");
+     });
+     mongoose.connection.close();
   }
 }
 
 function receivedPostback(event){
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
-  let timeOfPostback = event.timestamp;
-
+  let timeOfPostback = new Date(event.timestamp);
+  timeOfPostback = timeOfPostback.toLocaleString();
   // This payload parameter is set in button for structured message
   let payload = event.postback.payload;
   console.log("Received postback for user %d and page %d with payload '%s' " +
@@ -210,7 +231,7 @@ function sendImageMessage(recipientID, messageText){
       attachment: {
         type: "image",
         payload: {
-          url: 'https://avatars2.githubusercontent.com/u/9019318?v=3&s=400'
+          url: 'https://github.com/twbs.png'
         }
       }
     }
@@ -220,8 +241,19 @@ function sendImageMessage(recipientID, messageText){
 // Send an image using Send API
 function sendGIFMessage(recipientID, messageText){
   var  messageData = {
-    reciep
-  }
+    recipent: {
+      id: recipientID
+    },
+    message: {
+      attachment: {
+        type: "image",
+        payload: {
+          url: ''
+        }
+      }
+    }
+  };
+  callSendAPI(messageData);
 }
 // Send a structured message with generic template
 function sendGenericMessage(recipientID, messageText){
@@ -290,17 +322,6 @@ function sendTextMessage(recipientID, messageText){
       message : {
         text : aiText
       }
-      /*
-       "message":{
-         "attachment":{
-           "type":"image",
-           "payload":{
-             "url":"http://s.mxmcdn.net/images-storage/albums/nocover.png",
-             "is_reusable":true,
-           }
-         }
-       }
-       */
     }
     callSendAPI(messageData);
   });
@@ -310,7 +331,47 @@ function sendTextMessage(recipientID, messageText){
   });
 
   apiai.end();
+}
 
+function sendTextMessageDirectly(recipientId, messageText){
+  let messageData = {
+    recipient : {
+      id : recipientId
+    },
+    message : {
+      text : messageText
+    }
+  }
+  callSendAPI(messageData);
+}
+// Send a message with quick reply button
+function sendQuickReply(recipientId){
+  let messageData = {
+    recipient : {
+      id : recipientId
+    },
+    message: {
+      text: "What's your favorite movie genre?",
+      quick_replies: [
+        {
+          "content_type": "text",
+          "title": "Action",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+        },
+        {
+          "content_type": "text",
+          "title": "Comedy",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
+        },
+        {
+          "content_type": "text",
+          "title": "Drama",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+        }
+      ]
+    }
+  };
+  callSendAPI(messageData);
 }
 
 function callSendAPI(messageData){
