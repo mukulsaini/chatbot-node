@@ -279,8 +279,8 @@ function sendGenericMessage(recipientID, messageText){
             },{
               type: "postback",
               title: "Call Postback",
-              payload: "Payload for first bubble",
-            }],
+              payload: "Payload for first bubble"
+            }]
           }, {
             title: "Mukul Saini",
             subtitle: "Instagram",
@@ -293,7 +293,7 @@ function sendGenericMessage(recipientID, messageText){
            }, {
              type: "postback",
              title: "Call Postback",
-             payload: "Payload for second bubble",
+             payload: "Payload for second bubble"
             }],
           }]
         }
@@ -312,17 +312,27 @@ function sendTextMessage(recipientID, messageText){
   apiai.on('response', (response) => {
     // Got a response from api.ai. Let's POST to Facebook Messenger
     console.log("Response result from fulfillment");
-    console.log(response.result.fulfillment.messages);
-
-    let aiText = response.result.fulfillment.speech;
-    let messageData = {
-      recipient : {
-        id : recipientID
-      },
-      message : {
-        text : aiText
+    console.log(response.result.fulfillment);
+    let messageData;
+    if(response.result.fulfillment.speech === "attachment"){
+       messageData = {
+        recipient : {
+          id : recipientID
+        },
+        message :  response.result.fulfillment.messages[0].payload
+      }
+    }else{
+      let aiText = response.result.fulfillment.speech;
+      messageData = {
+        recipient : {
+          id : recipientID
+        },
+        message : {
+          text : aiText
+        }
       }
     }
+
     callSendAPI(messageData);
   });
 
