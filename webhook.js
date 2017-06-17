@@ -2,13 +2,11 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const request = require('request');
-const moment = require('moment');
 const apiai = require('apiai');
 const config = require('./config');
 const GithubBot = require('./lib/github');
 const WeatherBot = require('./lib/weather');
 const DictionaryBot = require('./lib/dictionary');
-const Promise = require("es6-promise").Promise;
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const Attachment =  require('./models/db');
@@ -20,7 +18,7 @@ app.use(morgan('dev'))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const GitHub = require('github-api');
+//const GitHub = require('github-api');
 
 //
 //request.get('http://api.musixmatch.com/ws/1.1/track.search?apikey=a927e59d4134e78c5100c1a69d301b7f&q_artist=justin%20bieber&page_size=10&page=1&s_track_rating=desc', (err, response, body) =>{
@@ -82,8 +80,8 @@ app.post('/webhook', (req, res)=>{
     //console.log(req.body);
     if (req.body.object === 'page') {
         req.body.entry.forEach((entry) => {
-          let pageID = entry.id;
-          let timeOfEvent = entry.time;
+          //let pageID = entry.id;
+          //let timeOfEvent = entry.time;
           console.log(entry.messaging);
           //Iterate over each messaging event
           entry.messaging.forEach((event) => {
