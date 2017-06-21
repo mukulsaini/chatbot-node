@@ -64,7 +64,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //// oauth for github
 
 
-/* For facebook validation */
+/* For facebook validation */ 
 app.get('/webhook', (req, res)=> {
     if(req.query['hub.mode'] && req.query['hub.verify_token'] === config.facebook.ValidationToken){
         res.status(200).send(req.query['hub.challenge']);
@@ -78,7 +78,7 @@ app.get('/webhook', (req, res)=> {
 app.post('/webhook', (req, res)=>{
     console.log("************ POST webhook ****************");
     //console.log(req.body);
-    if (req.body.object === 'page') {
+    if (req.body.object === 'page') { 
         req.body.entry.forEach((entry) => {
           //let pageID = entry.id;
           //let timeOfEvent = entry.time;
@@ -214,10 +214,53 @@ function receivedPostback(event){
   // This payload parameter is set in button for structured message
   let payload = event.postback.payload;
   console.log("Received postback for user %d and page %d with payload '%s' " +
-  "at %d", senderID, recipientID, payload, timeOfPostback);
+  "at %s", senderID, recipientID, payload, timeOfPostback);
   // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
-  sendTextMessage(senderID, "Postback called");
+  if (payload == "github_features") {
+    sendGithubFeatures(senderID);
+  }else{
+    sendTextMessage(senderID, "Postback called");
+  }
+}
+
+function sendGithubFeatures(recipientId){
+  let messageData = {
+    recipient : {
+      id : recipientId
+    },
+    message: {
+      text: "What's your favorite movie genre?",
+      quick_replies: [
+        {
+          "content_type": "text",
+          "title": "Action",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+        },
+        {
+          "content_type": "text",
+          "title": "Comedy",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
+        },
+        {
+          "content_type": "text",
+          "title": "Drama",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+        },
+            {
+          "content_type": "text",
+          "title": "Drama",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+        },
+            {
+          "content_type": "text",
+          "title": "Drama",
+          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+        }
+      ]
+    }
+  };
+  callSendAPI(messageData);
 }
 //  Send an image using Send API
 function sendImageMessage(recipientID, messageText){
@@ -269,7 +312,7 @@ function sendGenericMessage(recipientID, messageText){
             title: "Mukul Saini",
             subtitle: "Github",
             item_url: "https://www.github.com/mukulsaini/",
-            image_url: "https://avatars2.githubusercontent.com/u/9019318?v=3&s=400",
+            image_url: "https://graph.facebook.com/100009978550430/picture?type=large",
             buttons: [{
               type: "web_url",
               url: "https://www.github.com/mukulsaini/",
@@ -400,5 +443,3 @@ function callSendAPI(messageData){
 const server = app.listen(process.env.PORT || 5000, ()=>{
     console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
 });
-
-//https://tutorials.botsfloor.com/creating-a-simple-facebook-messenger-ai-bot-with-api-ai-in-node-js-50ae2fa5c80d
